@@ -64,6 +64,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState("");
@@ -153,11 +154,16 @@ function App() {
     setBookingMessage("");
   }
 
+  const normalizedPhone = customerPhone.replace(/\D/g, "");
+
+  const isPhoneValid = /^[1-9][0-9][0-9]{8,9}$/.test(normalizedPhone);
+
   const canContinue =
     selectedService &&
     selectedDate &&
     selectedTime &&
-    customerName.trim().length >= 2;
+    customerName.trim().length >= 2 &&
+    isPhoneValid;
 
   async function handleBooking() {
     if (!canContinue || isSubmitting) return;
@@ -167,6 +173,7 @@ function App() {
 
     const { data, error } = await supabase.rpc("create_booking", {
       p_customer_name: customerName.trim(),
+      p_customer_phone: normalizedPhone,
       p_service: selectedService.name,
       p_booking_date: selectedDate,
       p_booking_time: selectedTime,
@@ -397,6 +404,29 @@ function App() {
                 required
                 className="w-full rounded-xl border border-white/10 bg-[#1b1b1b] p-4 text-white outline-none placeholder:text-zinc-600 focus:border-orange-500"
               />
+
+              <label
+                htmlFor="customer-phone"
+                className="mb-2 mt-5 block text-sm text-zinc-300"
+              >
+                Telefone com DDD
+              </label>
+
+              <input
+                id="customer-phone"
+                type="tel"
+                inputMode="numeric"
+                value={customerPhone}
+                onChange={(event) => setCustomerPhone(event.target.value)}
+                placeholder="(73) 99999-9999"
+                required
+                className="w-full rounded-xl border border-white/10 bg-[#1b1b1b] p-4 text-white outline-none placeholder:text-zinc-600 focus:border-orange-500"
+              />
+
+              <p className="mt-2 text-xs text-zinc-500">
+                Informe seu WhatsApp para receber futuras notificações sobre seu
+                agendamento.
+              </p>
             </section>
           </div>
 
@@ -437,6 +467,12 @@ function App() {
                 <p className="text-zinc-500">Cliente</p>
                 <p className="mt-1 font-semibold">
                   {customerName.trim() || "Não informado"}
+                </p>
+              </div>
+              <div>
+                <p className="text-zinc-500">Telefone</p>
+                <p className="mt-1 font-semibold">
+                  {customerPhone.trim() || "Não informado"}
                 </p>
               </div>
             </div>
